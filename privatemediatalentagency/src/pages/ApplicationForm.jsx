@@ -1,5 +1,104 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+
+// Step 1: Personal Info
+const PersonalInfo = ({ formData, handleChange }) => (
+  <>
+    {["name", "email", "phone", "age"].map((field) => (
+      <div key={field}>
+        <label className="block text-gray-300 mb-1">
+          {field.charAt(0).toUpperCase() + field.slice(1)}
+        </label>
+        <input
+          type={
+            field === "email" ? "email" : field === "age" ? "number" : "text"
+          }
+          name={field}
+          value={formData[field]}
+          onChange={handleChange}
+          className="w-full p-2 bg-gray-700 text-white rounded"
+        />
+      </div>
+    ))}
+  </>
+);
+
+// Step 2: Experience
+const Experience = ({ formData, handleChange }) => (
+  <>
+    <div>
+      <label className="block text-gray-300 mb-1">Experience Level</label>
+      <select
+        name="experience"
+        value={formData.experience}
+        onChange={handleChange}
+        className="w-full p-2 bg-gray-700 text-white rounded"
+      >
+        <option value="">Select</option>
+        <option value="Beginner">Beginner</option>
+        <option value="Intermediate">Intermediate</option>
+        <option value="Experienced">Experienced</option>
+      </select>
+    </div>
+    <div>
+      <label className="block text-gray-300 mb-1">Work Samples (Links)</label>
+      <input
+        type="text"
+        name="workSamples"
+        value={formData.workSamples}
+        onChange={handleChange}
+        className="w-full p-2 bg-gray-700 text-white rounded"
+      />
+    </div>
+  </>
+);
+
+// Generic File Input Component
+const FileInput = ({ label, name, handleFileChange, fileName }) => (
+  <div>
+    <label className="block text-gray-300 mb-1">{label}</label>
+    <input
+      type="file"
+      name={name}
+      onChange={handleFileChange}
+      className="w-full p-2 bg-gray-700 text-white rounded"
+    />
+    {fileName && (
+      <p className="text-sm text-gray-400 mt-1">Selected: {fileName}</p>
+    )}
+  </div>
+);
+
+// Step 3: Upload Files
+const UploadFiles = ({ formData, handleFileChange }) => (
+  <>
+    <FileInput
+      label="Profile Picture"
+      name="profilePic"
+      handleFileChange={handleFileChange}
+      fileName={formData.profilePic?.name}
+    />
+    <FileInput
+      label="ID Proof"
+      name="idProof"
+      handleFileChange={handleFileChange}
+      fileName={formData.idProof?.name}
+    />
+  </>
+);
+
+// Step 4: Review
+const Review = ({ formData }) => (
+  <div>
+    <h3 className="text-lg font-semibold">Review Your Details</h3>
+    {Object.entries(formData).map(([key, value]) => (
+      <p key={key} className="text-gray-300">
+        {key.charAt(0).toUpperCase() + key.slice(1)}:{" "}
+        {typeof value === "object" && value ? value.name : value}
+      </p>
+    ))}
+  </div>
+);
 
 function ApplicationForm() {
   const navigate = useNavigate();
@@ -14,40 +113,29 @@ function ApplicationForm() {
     profilePic: null,
     idProof: null,
   });
-  const [profilePicPreview, setProfilePicPreview] = useState(null);
-  const [idProofPreview, setIdProofPreview] = useState(null);
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  const handleFileChange = (e) => {
+  const handleFileChange = useCallback((e) => {
     const { name, files } = e.target;
     const file = files[0];
-    setFormData((prev) => ({ ...prev, [name]: file }));
+    if (!file) return;
 
-    // Show a preview for image uploads
-    if (file && name === "profilePic") {
-      setProfilePicPreview(URL.createObjectURL(file));
-    } else if (file && name === "idProof") {
-      setIdProofPreview(URL.createObjectURL(file));
-    }
-  };
+    setFormData((prev) => ({ ...prev, [name]: file }));
+  }, []);
 
   const nextStep = () => {
-    if (step === 1) {
-      if (
-        !formData.name ||
-        !formData.email ||
-        !formData.phone ||
-        !formData.age
-      ) {
-        setError("Please provide all required details before proceeding.");
-        return;
-      }
+    if (
+      step === 1 &&
+      (!formData.name || !formData.email || !formData.phone || !formData.age)
+    ) {
+      setError("Please provide all required details before proceeding.");
+      return;
     }
     setError("");
     setStep((prev) => prev + 1);
@@ -61,19 +149,16 @@ function ApplicationForm() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setSubmitted(true);
-    setTimeout(() => {
-      navigate("/");
-    }, 3000); // Redirect to homepage after 3 seconds
+    setTimeout(() => navigate("/"), 3000);
   };
 
   return (
-    <div className="min-h-screen bg-[url(https://www.porn-star.com/tgpx/downloads/6597-250333.jpg)] bg-co text-white flex items-center justify-center py-12 px-4">
-      <div className="max-w-lg w-full bg-gray-500 p-6 rounded-lg shadow-lg lg:mt-20">
+    <div className="min-h-screen bg-[url(https://cdn77-pic.xvideos-cdn.com/videos/thumbs169poster/6a/a8/24/6aa82438e3e4fb953f73469685ae1065/6aa82438e3e4fb953f73469685ae1065.30.jpg)] bg-cover bg-center text-white flex items-center justify-center py-12 px-4">
+      <div className="max-w-lg w-full bg-gray-800 p-6 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold text-center mb-4">
           Talent Application
         </h2>
 
-        {/* Success Message */}
         {submitted ? (
           <div className="text-green-500 text-center mb-4">
             Your details have been submitted successfully! Redirecting to
@@ -81,7 +166,6 @@ function ApplicationForm() {
           </div>
         ) : (
           <>
-            {/* Error Message */}
             {error && (
               <div className="text-red-500 text-center mb-4">{error}</div>
             )}
@@ -101,150 +185,20 @@ function ApplicationForm() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* STEP 1 - Personal Info */}
               {step === 1 && (
-                <>
-                  <div>
-                    <label className="block text-gray-300 mb-1">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="w-full p-2 bg-gray-700 text-white rounded"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-300 mb-1">Email</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full p-2 bg-gray-700 text-white rounded"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-300 mb-1">
-                      Phone Number
-                    </label>
-                    <input
-                      type="text"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      className="w-full p-2 bg-gray-700 text-white rounded"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-300 mb-1">Age</label>
-                    <input
-                      type="number"
-                      name="age"
-                      min="18"
-                      max="70"
-                      value={formData.age}
-                      onChange={handleChange}
-                      className="w-full p-2 bg-gray-700 text-white rounded"
-                    />
-                  </div>
-                </>
+                <PersonalInfo formData={formData} handleChange={handleChange} />
               )}
-
-              {/* STEP 2 - Experience */}
               {step === 2 && (
-                <>
-                  <div>
-                    <label className="block text-gray-300 mb-1">
-                      Experience Level
-                    </label>
-                    <select
-                      name="experience"
-                      value={formData.experience}
-                      onChange={handleChange}
-                      className="w-full p-2 bg-gray-700 text-white rounded"
-                    >
-                      <option value="">Select</option>
-                      <option value="Beginner">Beginner</option>
-                      <option value="Intermediate">Intermediate</option>
-                      <option value="Experienced">Experienced</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-gray-300 mb-1">
-                      Work Samples (Links)
-                    </label>
-                    <input
-                      type="text"
-                      name="workSamples"
-                      value={formData.workSamples}
-                      onChange={handleChange}
-                      className="w-full p-2 bg-gray-700 text-white rounded"
-                    />
-                  </div>
-                </>
+                <Experience formData={formData} handleChange={handleChange} />
               )}
-
-              {/* STEP 3 - Upload Files */}
               {step === 3 && (
-                <>
-                  <div>
-                    <label className="block text-gray-300 mb-1">
-                      Profile Picture
-                    </label>
-                    <input
-                      type="file"
-                      name="profilePic"
-                      onChange={handleFileChange}
-                      className="w-full p-2 bg-gray-700 text-white rounded"
-                    />
-                    {profilePicPreview && (
-                      <img
-                        src={profilePicPreview}
-                        alt="Profile Preview"
-                        className="mt-2 w-24 h-24 object-cover rounded-lg"
-                      />
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-gray-300 mb-1">ID Proof</label>
-                    <input
-                      type="file"
-                      name="idProof"
-                      onChange={handleFileChange}
-                      className="w-full p-2 bg-gray-700 text-white rounded"
-                    />
-                    {idProofPreview && (
-                      <img
-                        src={idProofPreview}
-                        alt="ID Proof Preview"
-                        className="mt-2 w-24 h-24 object-cover rounded-lg"
-                      />
-                    )}
-                  </div>
-                </>
+                <UploadFiles
+                  formData={formData}
+                  handleFileChange={handleFileChange}
+                />
               )}
+              {step === 4 && <Review formData={formData} />}
 
-              {/* STEP 4 - Review & Submit */}
-              {step === 4 && (
-                <div>
-                  <h3 className="text-lg font-semibold">Review Your Details</h3>
-                  <p className="text-gray-300">Name: {formData.name}</p>
-                  <p className="text-gray-300">Email: {formData.email}</p>
-                  <p className="text-gray-300">Phone: {formData.phone}</p>
-                  <p className="text-gray-300">Age: {formData.age}</p>
-                  <p className="text-gray-300">
-                    Experience: {formData.experience}
-                  </p>
-                  <p className="text-gray-300">
-                    Work Samples: {formData.workSamples}
-                  </p>
-                </div>
-              )}
-
-              {/* Navigation Buttons */}
               <div className="flex justify-between mt-4">
                 {step > 1 && (
                   <button
