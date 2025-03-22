@@ -37,7 +37,7 @@ export default function Section3() {
         </p>
         <a
           href="/contact"
-          className="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-6 rounded-lg transition"
+          className="bg-blue-500 hover:bg-blue-900 text-white font-bold py-2 px-6 rounded-lg transition"
         >
           Get Started
         </a>

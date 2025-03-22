@@ -7,7 +7,7 @@ export default function HeroSection() {
         Adult Talent Agency <br /> for Pornstars, Influencers, and Models
       </h1>
       <Link to="/application" className="mt-4">
-        <button className="bg-teal-400 hover:bg-teal-900 py-2 px-4 text-white rounded-sm">
+        <button className="bg-blue-600 hover:bg-blue-900 py-2 px-4 text-white rounded-sm">
           Apply Now
         </button>
       </Link>

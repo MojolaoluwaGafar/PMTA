@@ -74,7 +74,7 @@ export default function Section4() {
       {/* CTA Button */}
       <div className="mt-8">
         <Link to="/application">
-          <button className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-3 rounded-lg transition">
+          <button className="bg-blue-600 hover:bg-blue-900 text-white font-semibold px-6 py-3 rounded-lg transition">
             ADULT CASTING ONLINE
           </button>
         </Link>
