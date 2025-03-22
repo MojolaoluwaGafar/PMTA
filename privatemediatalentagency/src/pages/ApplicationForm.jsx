@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom"; // Fixed incorrect import
 
 function ApplicationForm() {
   const [step, setStep] = useState(1);
@@ -28,6 +28,7 @@ function ApplicationForm() {
     genitals: null,
     assPic: null,
   });
+
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
@@ -48,28 +49,83 @@ function ApplicationForm() {
       return;
     }
 
-    // Update form data
     setFormData((prev) => ({
       ...prev,
       [name]: file,
     }));
 
-    // Clear previous errors
-    setError("");
+    setError(""); // Clear previous errors
   }, []);
+
+  /** Step Validation */
+  const validateStep = () => {
+    setError(""); // Reset errors before checking
+
+    if (step === 1) {
+      if (
+        !formData.name ||
+        !formData.email ||
+        !formData.phone ||
+        !formData.dob ||
+        !formData.gender ||
+        !formData.ethnicity ||
+        !formData.height ||
+        !formData.weight ||
+        !formData.bodyType ||
+        !formData.eyeColor ||
+        !formData.hairColor ||
+        !formData.sexualOrientation
+      ) {
+        setError("Please fill in all required fields in Step 1.");
+        return false;
+      }
+    }
+
+    if (step === 2) {
+      if (
+        !formData.experience ||
+        !formData.workSamples ||
+        !formData.socialMedia
+      ) {
+        setError("Please fill in all required fields in Step 2.");
+        return false;
+      }
+    }
+
+    if (step === 3) {
+      if (
+        !formData.profilePic ||
+        !formData.idProof ||
+        !formData.selfie ||
+        !formData.frontBodyPic ||
+        !formData.backBodyPic ||
+        !formData.chestStomach ||
+        !formData.genitals ||
+        !formData.assPic
+      ) {
+        setError("Please upload all required images before submitting.");
+        return false;
+      }
+    }
+
+    return true; // Step is valid
+  };
+
+  const nextStep = () => {
+    if (validateStep()) {
+      setStep(step + 1);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.email || !formData.phone) {
-      setError("Please fill in all required fields.");
-      return;
-    }
+    if (!validateStep()) return;
 
     setSubmitted(true);
   };
 
-  // File Upload Component
+  /** File Upload Component */
   const FileUpload = ({ label, name, accept }) => (
     <div className="mb-3">
       <label className="block font-semibold">{label}:</label>
@@ -105,7 +161,7 @@ function ApplicationForm() {
 
         {submitted ? (
           <div className="text-center p-4">
-            <h2 className="text-xl text-green-500  font-semibold">
+            <h2 className="text-xl text-green-500 font-semibold">
               Application Received!!!
             </h2>
             <p className="mt-2">
@@ -114,31 +170,11 @@ function ApplicationForm() {
               you.
             </p>
             <p className="mt-2">
-              In the meantime, we will automatically register you for an account
-              on our webcam modeling platform so you can start making money
-              online immediately.
-            </p>
-            <p className="mt-2">
-              Due to the sheer number of applications we receive—several
-              thousand per day—it may take a few days before you're contacted.
-              So, don’t worry if you don’t immediately hear from an agent or
-              representative.
-            </p>
-            <p className="mt-2 font-semibold text-red-400">
               Make sure to check your spam folder, as email providers often flag
               emails with the word “porn” as spam.
             </p>
-            <p className="mt-2 font-semibold text-red-400">
-              As of now we are only looking to represent Males that have been
-              referred to us by other performers or producers. If that is you,
-              <span className="text-blue-400">
-                <Link to="/contact">Contact us</Link>
-              </span>{" "}
-              or send a mail to <span className="text-white">Privatemediatalentagency@gmail.com</span>{" "}
-              , but be prepared to tell us who sent you.
-            </p>
             <Link to="/">
-              <button className="bg-blue-500 py-2 px-2 rounded-md">
+              <button className="bg-blue-500 py-2 px-2 rounded-md mt-4">
                 Back to Home
               </button>
             </Link>
@@ -164,7 +200,6 @@ function ApplicationForm() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Step 1: Personal Information */}
               {step === 1 && (
                 <div>
                   <label className="block">Name:</label>
@@ -176,7 +211,6 @@ function ApplicationForm() {
                     className="w-full p-2 border border-gray-300 rounded text-gray-300"
                     required
                   />
-
                   <label className="block">Email:</label>
                   <input
                     type="email"
@@ -186,7 +220,6 @@ function ApplicationForm() {
                     className="w-full p-2 border border-gray-300 rounded text-gray-300"
                     required
                   />
-
                   <label className="block">Phone:</label>
                   <input
                     type="tel"
@@ -203,17 +236,17 @@ function ApplicationForm() {
                     name="dob"
                     value={formData.dob}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded text-gray-300"
+                    className="w-full p-2 border border-gray-300 rounded text-gray-300 bg-black"
                   />
 
-                  <label className="block">Gender</label>
+                  <label className="block">Gender:</label>
                   <select
                     name="gender"
                     value={formData.gender}
                     onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded text-gray-300"
                   >
-                    <option value="">select</option>
+                    <option value="">Select Gender</option>
                     <option className="text-black" value="Male">
                       Male
                     </option>
@@ -222,22 +255,13 @@ function ApplicationForm() {
                     </option>
                   </select>
 
-                  <label className="block">Ethnicity:</label>
-                  <input
-                    type="text"
-                    name="ethnicity"
-                    value={formData.ethnicity}
-                    onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded text-gray-300"
-                  />
-
                   <label className="block">Height (cm):</label>
                   <input
                     type="number"
                     name="height"
                     value={formData.height}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded text-gray-300"
+                    className="w-full p-2 border border-gray-300 rounded text-gray-300 bg-black"
                   />
 
                   <label className="block">Weight (kg):</label>
@@ -246,35 +270,92 @@ function ApplicationForm() {
                     name="weight"
                     value={formData.weight}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded text-gray-300"
+                    className="w-full p-2 border border-gray-300 rounded text-gray-300 bg-black"
                   />
 
                   <label className="block">Body Type:</label>
-                  <input
-                    type="text"
+                  <select
                     name="bodyType"
                     value={formData.bodyType}
                     onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded text-gray-300"
-                  />
-
-                  <label className="block">Hair Color:</label>
-                  <input
-                    type="text"
-                    name="hairColor"
-                    value={formData.hairColor}
-                    onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded text-gray-300"
-                  />
+                  >
+                    <option value="">Select</option>
+                    <option className="text-black" value="Slim">
+                      Slim
+                    </option>
+                    <option className="text-black" value="Athletic">
+                      Athletic
+                    </option>
+                    <option className="text-black" value="Muscular">
+                      Muscular
+                    </option>
+                    <option className="text-black" value="Curvy">
+                      Curvy
+                    </option>
+                    <option className="text-black" value="Plus Size">
+                      Plus Size
+                    </option>
+                    <option className="text-black" value="Other">
+                      Other
+                    </option>
+                  </select>
 
                   <label className="block">Eye Color:</label>
-                  <input
-                    type="text"
+                  <select
                     name="eyeColor"
                     value={formData.eyeColor}
                     onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded text-gray-300"
-                  />
+                  >
+                    <option value="">Select</option>
+                    <option className="text-black" value="Brown">
+                      Brown
+                    </option>
+                    <option className="text-black" value="Blue">
+                      Blue
+                    </option>
+                    <option className="text-black" value="Green">
+                      Green
+                    </option>
+                    <option className="text-black" value="Hazel">
+                      Hazel
+                    </option>
+                    <option className="text-black" value="Gray">
+                      Gray
+                    </option>
+                    <option className="text-black" value="Other">
+                      Other
+                    </option>
+                  </select>
+
+                  <label className="block">Hair Color:</label>
+                  <select
+                    name="hairColor"
+                    value={formData.hairColor}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded text-gray-300"
+                  >
+                    <option value="">Select</option>
+                    <option className="text-black" value="Black">
+                      Black
+                    </option>
+                    <option className="text-black" value="Brown">
+                      Brown
+                    </option>
+                    <option className="text-black" value="Blonde">
+                      Blonde
+                    </option>
+                    <option className="text-black" value="Red">
+                      Red
+                    </option>
+                    <option className="text-black" value="Gray">
+                      Gray
+                    </option>
+                    <option className="text-black" value="Other">
+                      Other
+                    </option>
+                  </select>
 
                   <label className="block">Sexual Orientation:</label>
                   <select
@@ -283,9 +364,7 @@ function ApplicationForm() {
                     onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded text-gray-300"
                   >
-                    <option className="text-black" value="">
-                      Select
-                    </option>
+                    <option value="">Select</option>
                     <option className="text-black" value="Straight">
                       Straight
                     </option>
@@ -295,11 +374,13 @@ function ApplicationForm() {
                     <option className="text-black" value="Bisexual">
                       Bisexual
                     </option>
+                    <option className="text-black" value="Other">
+                      Other
+                    </option>
                   </select>
                 </div>
               )}
 
-              {/* Step 2: Experience */}
               {step === 2 && (
                 <div>
                   <label className="block">Experience:</label>
@@ -309,27 +390,9 @@ function ApplicationForm() {
                     onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded text-gray-300"
                   />
-                  <label className="block">Work Samples (Links):</label>
-                  <input
-                    type="text"
-                    name="workSamples"
-                    value={formData.workSamples}
-                    onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded text-gray-300"
-                  />
-
-                  <label className="block">Social Media Links:</label>
-                  <input
-                    type="text"
-                    name="socialMedia"
-                    value={formData.socialMedia}
-                    onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded text-gray-300"
-                  />
                 </div>
               )}
 
-              {/* Step 3: File Uploads */}
               {step === 3 && (
                 <div>
                   <FileUpload
@@ -342,47 +405,24 @@ function ApplicationForm() {
                     name="idProof"
                     accept="image/*,application/pdf"
                   />
-                  <FileUpload label="Selfie" name="selfie" accept="image/*" />
-                  <FileUpload
-                    label="Body Shot (Front)"
-                    name="frontBodyPic"
-                    accept="image/*"
-                  />
-                  <FileUpload
-                    label="Body Shot (Back)"
-                    name="backBodyPic"
-                    accept="image/*"
-                  />
-                  <FileUpload
-                    label="Chest/Stomach"
-                    name="chestStomach"
-                    accept="image/*"
-                  />
-                  <FileUpload
-                    label="Genitals (Pussy or Cock)"
-                    name="genitals"
-                    accept="image/*"
-                  />
-                  <FileUpload label="Ass Shot" name="assPic" accept="image/*" />
                 </div>
               )}
 
-              {/* Navigation Buttons */}
               <div className="flex justify-between mt-4">
                 {step > 1 && (
                   <button
-                    className="bg-blue-600 py-2 px-2 hover:bg-blue-900"
                     type="button"
                     onClick={() => setStep(step - 1)}
+                    className="bg-blue-600 py-2 px-2"
                   >
                     Back
                   </button>
                 )}
                 {step < 3 ? (
                   <button
-                    className="bg-blue-600 py-2 px-2 hover:bg-blue-900"
                     type="button"
-                    onClick={() => setStep(step + 1)}
+                    onClick={nextStep}
+                    className="bg-blue-600 py-2 px-2"
                   >
                     Next
                   </button>
