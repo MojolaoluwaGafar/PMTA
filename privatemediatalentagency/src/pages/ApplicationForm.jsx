@@ -33,9 +33,14 @@ function ApplicationForm() {
   const [submitted, setSubmitted] = useState(false);
 
   const handleChange = useCallback((e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  }, []);
+  const { name, value } = e.target;
+  setFormData(prev => {
+    const updatedData = { ...prev, [name]: value.trim() };
+    console.log("Updated formData:", updatedData);
+    return updatedData;
+  });
+}, []);
+
 
   const handleFileChange = useCallback((e) => {
     const { name, files } = e.target;
@@ -63,9 +68,9 @@ function ApplicationForm() {
 
     if (step === 1) {
       if (
-        !formData.name ||
-        !formData.email ||
-        !formData.phone ||
+        !formData.name.trim() ||
+        !formData.email.trim() ||
+        !formData.phone.trim() ||
         !formData.dob ||
         !formData.gender ||
         !formData.ethnicity ||
@@ -83,9 +88,9 @@ function ApplicationForm() {
 
     if (step === 2) {
       if (
-        !formData.experience ||
-        !formData.workSamples ||
-        !formData.socialMedia
+        !formData.experience.trim() ||
+        !formData.workSamples.trim() ||
+        !formData.socialMedia.trim()
       ) {
         setError("Please fill in all required fields in Step 2.");
         return false;
@@ -134,7 +139,7 @@ function ApplicationForm() {
         name={name}
         accept={accept}
         onChange={handleFileChange}
-        className="w-full p-2 border border-gray-400 rounded text-black"
+        className="w-full p-2 border border-gray-400 rounded"
       />
       {formData[name] && (
         <div className="mt-2">
@@ -208,7 +213,7 @@ function ApplicationForm() {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded text-gray-300"
+                    className="w-full p-2 bg-gray-800 text-white rounded"
                     required
                   />
                   <label className="block">Email:</label>
@@ -217,7 +222,7 @@ function ApplicationForm() {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded text-gray-300"
+                    className="w-full p-2 bg-gray-800 text-white rounded"
                     required
                   />
                   <label className="block">Phone:</label>
@@ -226,7 +231,7 @@ function ApplicationForm() {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded text-gray-300"
+                    className="w-full p-2 bg-gray-800 text-white rounded"
                     required
                   />
 
@@ -236,7 +241,7 @@ function ApplicationForm() {
                     name="dob"
                     value={formData.dob}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded text-gray-300 bg-black"
+                    className="w-full p-2 bg-gray-800 text-white rounded"
                   />
 
                   <label className="block">Gender:</label>
@@ -244,7 +249,7 @@ function ApplicationForm() {
                     name="gender"
                     value={formData.gender}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded text-gray-300"
+                    className="w-full p-2 bg-gray-800 text-white rounded"
                   >
                     <option value="">Select Gender</option>
                     <option className="text-black" value="Male">
@@ -261,7 +266,7 @@ function ApplicationForm() {
                     name="height"
                     value={formData.height}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded text-gray-300 bg-black"
+                    className="w-full p-2 bg-gray-800 text-white rounded"
                   />
 
                   <label className="block">Weight (kg):</label>
@@ -270,7 +275,7 @@ function ApplicationForm() {
                     name="weight"
                     value={formData.weight}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded text-gray-300 bg-black"
+                    className="w-full p-2 bg-gray-800 text-white rounded"
                   />
 
                   <label className="block">Body Type:</label>
@@ -278,7 +283,7 @@ function ApplicationForm() {
                     name="bodyType"
                     value={formData.bodyType}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded text-gray-300"
+                    className="w-full p-2 bg-gray-800 text-white rounded"
                   >
                     <option value="">Select</option>
                     <option className="text-black" value="Slim">
@@ -301,12 +306,40 @@ function ApplicationForm() {
                     </option>
                   </select>
 
+                  <label className="block">Ethnicity:</label>
+                  <select
+                    name="ethnicity"
+                    value={formData.ethnicity}
+                    onChange={handleChange}
+                    className="w-full p-2 bg-gray-800 text-white rounded"
+                  >
+                    <option value="">Select</option>
+                    <option className="text-black" value="asian">
+                      Asian
+                    </option>
+                    <option className="text-black" value="black">
+                      Black
+                    </option>
+                    <option className="text-black" value="white">
+                      White
+                    </option>
+                    <option className="text-black" value="hispanic or latino">
+                      Hispanic or Latino
+                    </option>
+                    <option className="text-black" value="native american">
+                      Native American
+                    </option>
+                    <option className="text-black" value="Other">
+                      Other
+                    </option>
+                  </select>
+
                   <label className="block">Eye Color:</label>
                   <select
                     name="eyeColor"
                     value={formData.eyeColor}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded text-gray-300"
+                    className="w-full p-2 bg-gray-800 text-white rounded"
                   >
                     <option value="">Select</option>
                     <option className="text-black" value="Brown">
@@ -334,7 +367,7 @@ function ApplicationForm() {
                     name="hairColor"
                     value={formData.hairColor}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded text-gray-300"
+                    className="w-full p-2 bg-gray-800 text-white rounded"
                   >
                     <option value="">Select</option>
                     <option className="text-black" value="Black">
@@ -362,7 +395,7 @@ function ApplicationForm() {
                     name="sexualOrientation"
                     value={formData.sexualOrientation}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded text-gray-300"
+                    className="w-full p-2 bg-gray-800 text-white rounded"
                   >
                     <option value="">Select</option>
                     <option className="text-black" value="Straight">
@@ -384,11 +417,33 @@ function ApplicationForm() {
               {step === 2 && (
                 <div>
                   <label className="block">Experience:</label>
-                  <textarea
+                  <select
                     name="experience"
                     value={formData.experience}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded text-gray-300"
+                    className="w-full p-2 bg-gray-800 text-white rounded"
+                  >
+                    <option value="">Select</option>
+                    <option value="None">None</option>
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Professional">Professional</option>
+                  </select>
+
+                  <label className="block mt-2">Work Sample (links):</label>
+                  <textarea
+                    name="workSamples" // Fixed name attribute
+                    value={formData.workSamples || ""} // Ensure it's not undefined
+                    onChange={handleChange}
+                    className="w-full p-2 bg-gray-800 text-white rounded"
+                  />
+
+                  <label className="block mt-2">Social Media (links):</label>
+                  <textarea
+                    name="socialMedia" // Fixed name attribute
+                    value={formData.socialMedia || ""} // Ensure it's not undefined
+                    onChange={handleChange}
+                    className="w-full p-2 bg-gray-800 text-white rounded"
                   />
                 </div>
               )}
@@ -403,7 +458,33 @@ function ApplicationForm() {
                   <FileUpload
                     label="ID Proof"
                     name="idProof"
-                    accept="image/*,application/pdf"
+                    accept="image/*"
+                  />
+                  <FileUpload label="Selfie" name="selfie" accept="image/*" />
+                  <FileUpload
+                    label="Front Body Picture"
+                    name="frontBodyPic"
+                    accept="image/*"
+                  />
+                  <FileUpload
+                    label="Back Body Picture"
+                    name="backBodyPic"
+                    accept="image/*"
+                  />
+                  <FileUpload
+                    label="Chest & Stomach"
+                    name="chestStomach"
+                    accept="image/*"
+                  />
+                  <FileUpload
+                    label="Genitals"
+                    name="genitals"
+                    accept="image/*"
+                  />
+                  <FileUpload
+                    label="Ass Picture"
+                    name="assPic"
+                    accept="image/*"
                   />
                 </div>
               )}
