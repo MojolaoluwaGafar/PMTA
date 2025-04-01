@@ -13,7 +13,7 @@ app.use(cors());
 
 // ✅ Connect to MongoDB
 mongoose
-  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => console.log("❌ MongoDB Connection Error:", err));
 
@@ -51,6 +51,7 @@ const applicationSchema = new mongoose.Schema({
   chestStomach: String,
   genitals: String,
   assPic: String,
+  submittedAt: { type: Date, default: Date.now },
 });
 
 const Application = mongoose.model("Application", applicationSchema);
@@ -69,7 +70,7 @@ const sendEmail = async (subject, text) => {
   try {
     await transporter.sendMail({
       from: `"PMTA Admin" <${process.env.EMAIL}>`,
-      to: process.env.TO_EMAIL,
+      to: process.env.EMAIL,
       subject,
       text,
     });
@@ -87,12 +88,15 @@ app.post("/api/contact", async (req, res) => {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    await sendEmail(`New Contact Form Message from ${name}`, `
+    await sendEmail(
+      `New Contact Form Message from ${name}`,
+      `
       Name: ${name}
       Email: ${email}
       Subject: ${subject}
       Message: ${message}
-    `);
+    `
+    );
 
     res.status(200).json({ message: "Message sent successfully!" });
   } catch (error) {
@@ -116,6 +120,8 @@ app.post(
   ]),
   async (req, res) => {
     try {
+      console.log("🚀 Received application data:", req.body);
+
       const {
         name,
         email,
@@ -135,16 +141,20 @@ app.post(
       } = req.body;
 
       if (!name || !email || !phone) {
-        return res.status(400).json({ error: "Name, Email, and Phone are required" });
+        return res
+          .status(400)
+          .json({ error: "Name, Email, and Phone are required" });
       }
 
-      // File URLs (for now, using local paths; Cloudinary integration can be added)
+      // ✅ Store file paths
       const fileUrls = {};
-      Object.keys(req.files).forEach((key) => {
-        fileUrls[key] = `/uploads/${req.files[key][0].filename}`;
-      });
+      if (req.files) {
+        Object.keys(req.files).forEach((key) => {
+          fileUrls[key] = `/uploads/${req.files[key][0].filename}`;
+        });
+      }
 
-      // Save to MongoDB
+      // ✅ Save application to MongoDB
       const newApplication = new Application({
         name,
         email,
@@ -164,10 +174,11 @@ app.post(
         ...fileUrls,
       });
 
+      console.log("📝 Saving application:", newApplication);
       await newApplication.save();
-      console.log("✅ Application saved to MongoDB");
+      console.log("✅ Application saved to MongoDB!");
 
-      // Send Email Notification
+      // ✅ Send Email Notification
       let emailBody = `
 New application submitted:
 
@@ -194,8 +205,9 @@ ${Object.entries(fileUrls)
 `;
 
       await sendEmail("New Application Form Submission", emailBody);
-
-      res.json({ message: "Application submitted and email sent successfully!" });
+      res.json({
+        message: "Application submitted and email sent successfully!",
+      });
     } catch (error) {
       console.error("❌ Error:", error);
       res.status(500).json({ message: "Error processing application" });
@@ -220,4 +232,6 @@ app.get("/", (req, res) => {
 
 // ✅ Start Server
 const PORT = process.env.PORT || 5100;
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+app.listen(PORT, () =>
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
+);
