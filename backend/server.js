@@ -1,54 +1,223 @@
-const applicationRoutes = require("./routes/applications.js");
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const nodemailer = require("nodemailer");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
+// ✅ Connect to MongoDB
 mongoose
-  .connect("mongodb://127.0.0.1:27017/pmta")
-  .then(() => console.log("MongoDB Connected"))
-  .catch((err) => console.log("MongoDB Connection Error:", err));
+  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) => console.log("❌ MongoDB Connection Error:", err));
 
-const contactSchema = new mongoose.Schema({
+// ✅ Multer setup for file uploads
+const storage = multer.diskStorage({
+  destination: "uploads/",
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+const upload = multer({ storage });
+
+// ✅ Define Mongoose Schema & Model for Applications
+const applicationSchema = new mongoose.Schema({
   name: String,
   email: String,
-  subject: String,
-  message: String,
-  date: { type: Date, default: Date.now },
+  phone: String,
+  dob: String,
+  gender: String,
+  weight: String,
+  height: String,
+  ethnicity: String,
+  bodyType: String,
+  eyeColor: String,
+  hairColor: String,
+  sexualOrientation: String,
+  experience: String,
+  workSamples: String,
+  socialMedia: String,
+  profilePic: String,
+  idProof: String,
+  selfie: String,
+  frontBodyPic: String,
+  backBodyPic: String,
+  chestStomach: String,
+  genitals: String,
+  assPic: String,
 });
 
-const Contact = mongoose.model("Contact", contactSchema);
+const Application = mongoose.model("Application", applicationSchema);
 
+// ✅ Nodemailer Configuration
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+});
+
+// ✅ Send Email Function
+const sendEmail = async (subject, text) => {
+  try {
+    await transporter.sendMail({
+      from: `"PMTA Admin" <${process.env.EMAIL}>`,
+      to: process.env.TO_EMAIL,
+      subject,
+      text,
+    });
+    console.log("✅ Email sent successfully!");
+  } catch (error) {
+    console.error("❌ Error sending email:", error);
+  }
+};
+
+// ✅ Contact Form Submission Route
 app.post("/api/contact", async (req, res) => {
   try {
     const { name, email, subject, message } = req.body;
     if (!name || !email || !subject || !message) {
       return res.status(400).json({ error: "All fields are required" });
     }
-    const newMessage = new Contact({ name, email, subject, message });
-    await newMessage.save();
-    res.json({ message: "Form submitted successfully!" });
+
+    await sendEmail(`New Contact Form Message from ${name}`, `
+      Name: ${name}
+      Email: ${email}
+      Subject: ${subject}
+      Message: ${message}
+    `);
+
+    res.status(200).json({ message: "Message sent successfully!" });
   } catch (error) {
-    res.status(500).json({ message: "Error saving message" });
+    console.error("❌ Error:", error);
+    res.status(500).json({ error: "Failed to send message" });
   }
 });
-app.get("/submissions", async (req, res) => {
+
+// ✅ Application Form Submission Route (With File Upload)
+app.post(
+  "/api/submit",
+  upload.fields([
+    { name: "profilePic" },
+    { name: "idProof" },
+    { name: "selfie" },
+    { name: "frontBodyPic" },
+    { name: "backBodyPic" },
+    { name: "chestStomach" },
+    { name: "genitals" },
+    { name: "assPic" },
+  ]),
+  async (req, res) => {
+    try {
+      const {
+        name,
+        email,
+        phone,
+        dob,
+        gender,
+        weight,
+        height,
+        ethnicity,
+        bodyType,
+        eyeColor,
+        hairColor,
+        sexualOrientation,
+        experience,
+        workSamples,
+        socialMedia,
+      } = req.body;
+
+      if (!name || !email || !phone) {
+        return res.status(400).json({ error: "Name, Email, and Phone are required" });
+      }
+
+      // File URLs (for now, using local paths; Cloudinary integration can be added)
+      const fileUrls = {};
+      Object.keys(req.files).forEach((key) => {
+        fileUrls[key] = `/uploads/${req.files[key][0].filename}`;
+      });
+
+      // Save to MongoDB
+      const newApplication = new Application({
+        name,
+        email,
+        phone,
+        dob,
+        gender,
+        weight,
+        height,
+        ethnicity,
+        bodyType,
+        eyeColor,
+        hairColor,
+        sexualOrientation,
+        experience,
+        workSamples,
+        socialMedia,
+        ...fileUrls,
+      });
+
+      await newApplication.save();
+      console.log("✅ Application saved to MongoDB");
+
+      // Send Email Notification
+      let emailBody = `
+New application submitted:
+
+Name: ${name}
+Email: ${email}
+Phone: ${phone}
+DOB: ${dob || "N/A"}
+Gender: ${gender || "N/A"}
+Weight: ${weight || "N/A"}
+Height: ${height || "N/A"}
+Ethnicity: ${ethnicity || "N/A"}
+Body Type: ${bodyType || "N/A"}
+Eye Color: ${eyeColor || "N/A"}
+Hair Color: ${hairColor || "N/A"}
+Sexual Orientation: ${sexualOrientation || "N/A"}
+Experience: ${experience || "N/A"}
+Work Samples: ${workSamples || "N/A"}
+Social Media: ${socialMedia || "N/A"}
+
+Uploaded Files:
+${Object.entries(fileUrls)
+  .map(([key, url]) => `${key}: ${url}`)
+  .join("\n")}
+`;
+
+      await sendEmail("New Application Form Submission", emailBody);
+
+      res.json({ message: "Application submitted and email sent successfully!" });
+    } catch (error) {
+      console.error("❌ Error:", error);
+      res.status(500).json({ message: "Error processing application" });
+    }
+  }
+);
+
+// ✅ Fetch all applications
+app.get("/api/applications", async (req, res) => {
   try {
-    const submissions = await Contact.find(); // Replace with your actual Mongoose model
-    res.json(submissions);
+    const applications = await Application.find();
+    res.json(applications);
   } catch (error) {
-    res.status(500).json({ error: "Error fetching data" });
+    res.status(500).json({ error: "Error fetching applications" });
   }
 });
 
+// ✅ Default Route
 app.get("/", (req, res) => {
-  res.send("PMTA API is running...");
+  res.send("✅ PMTA API is running...");
 });
-app.use("/api", applicationRoutes);
 
-// Start Server
+// ✅ Start Server
 const PORT = process.env.PORT || 5100;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));

@@ -43,7 +43,7 @@ function ApplicationForm() {
 
 
   const handleFileChange = useCallback((e) => {
-    const { name, files } = e.target;
+      const { name, value, type, files } = e.target;
     const file = files[0];
 
     if (!file) return;
@@ -56,7 +56,7 @@ function ApplicationForm() {
 
     setFormData((prev) => ({
       ...prev,
-      [name]: file,
+      [name]:  type === "file" ? files[0] : value,
     }));
 
     setError(""); // Clear previous errors
@@ -122,10 +122,28 @@ function ApplicationForm() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateStep()) return;
+     const formDataToSend = new FormData();
+  Object.entries(formData).forEach(([key, value]) => {
+    if (value) {
+      formDataToSend.append(key, value);
+    }
+  });
+
+  try {
+    const response = await fetch("http://localhost:5100/api/submit", {
+      method: "POST",
+      body: formDataToSend, // ✅ No need for Content-Type
+    });
+
+    const result = await response.json();
+    console.log("Response:", result);
+  } catch (error) {
+    console.error("Submission error:", error);
+  }
 
     setSubmitted(true);
   };
