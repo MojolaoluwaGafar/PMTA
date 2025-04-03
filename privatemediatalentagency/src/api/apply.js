@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5100/api/apply"; // Change to deployed URL later
+const API_URL = "https://pmta.onrender.com"; // Change to deployed URL later
 
 export const submitApplication = async (formData) => {
   try {
