@@ -45,7 +45,7 @@ export default function Contact() {
     setLoading(true);
 
     try {
-      await axios.post("http://localhost:5100/api/contact", formData); // Removed `const res =`
+      await axios.post("https://pmta.onrender.com/api/contact", formData); // Removed `const res =`
       setSuccess("Message sent successfully!");
       setFormData({ name: "", email: "", subject: "", message: "" });
     } catch (err) {

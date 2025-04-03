@@ -134,7 +134,7 @@ function ApplicationForm() {
   });
 
   try {
-    const response = await fetch("http://localhost:5100/api/submit", {
+    const response = await fetch("https://pmta.onrender.com/api/submit", {
       method: "POST",
       body: formDataToSend, // ✅ No need for Content-Type
     });
